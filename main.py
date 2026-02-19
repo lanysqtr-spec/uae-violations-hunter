@@ -3,7 +3,7 @@ from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# --- [1] الهيكل والتنسيقات المتقدمة (CSS) ---
+# --- [1] الهيكل الأساسي وتنسيقات الـ CSS (النحت البصري) ---
 COMMON_HEADER = '''
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -11,35 +11,42 @@ COMMON_HEADER = '''
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; background-color: #f7f8fa; font-family: 'Segoe UI', Tahoma, sans-serif; scroll-behavior: smooth; }
+        body, html { margin: 0; padding: 0; width: 100%; background-color: #f7f8fa; font-family: 'Segoe UI', Tahoma, sans-serif; }
         
-        /* الهيدر الثابت */
-        .sticky-header { position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .sticky-header img { width: 100%; display: block; }
-        .spacer { margin-top: 65px; }
+        /* الهيدر الثابت - مسطرة */
+        .sticky-header { 
+            position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; 
+            background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .sticky-header img { width: 100%; display: block; border: none; }
+        
+        /* مسافة الهيدر عشان الصورة الأولى تنزل تحت بالملي */
+        .spacer { margin-top: 85px; } 
 
-        /* تنسيق الصفحة الرئيسية كصورة واحدة مقسمة */
         .page-content { position: relative; width: 100%; display: flex; flex-direction: column; }
-        .page-content img { width: 100%; height: auto; display: block; margin: 0; padding: 0; border: none; }
+        .page-content img { width: 100%; height: auto; display: block; border: none; margin: 0; padding: 0; }
 
-        /* تحديد مكان الأزرار الشفافة بالضبط فوق الصور */
+        /* برمجة الأزرار الشفافة فوق الصور بالظبط */
         .btn-overlay {
             position: absolute;
-            width: 100%; /* العرض كامل */
-            height: 80px; /* ارتفاع الزرار التقريبي */
+            left: 5%;
+            width: 90%;
+            height: 70px;
             background: rgba(255, 255, 255, 0); /* شفاف تماماً */
             cursor: pointer;
             z-index: 100;
         }
-        /* مكان زرار ابدأ الخدمة (يعدل حسب ترتيب الصور) */
-        .start-service-pos { top: 950px; } 
-        /* مكان زرار مستخدم جديد */
-        .new-user-pos { top: 1450px; }
+        
+        /* مكان زر "ابدأ الخدمة" فوق صورته */
+        .start-service-pos { top: 920px; } 
+        /* مكان زر "مستخدم جديد" فوق صورته */
+        .new-user-pos { top: 1420px; }
 
-        /* تنسيقات صفحة الاستعلام والتبويبات */
+        /* تنسيقات صفحة الاستعلام - نحت كامل */
         .page-wrapper { max-width: 1000px; margin: 40px auto; padding: 20px; direction: rtl; text-align: right; }
+        .breadcrumb { font-size: 13px; color: #888; margin-bottom: 20px; }
         .service-title { color: #b0914f; font-size: 28px; font-weight: bold; margin-bottom: 25px; }
-        .form-container { background: white; border-radius: 8px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #eee; }
+        .form-container { background: white; border-radius: 8px; padding: 35px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #eee; }
         
         .tabs { display: flex; gap: 5px; margin-bottom: 30px; border-bottom: 2px solid #f0f0f0; }
         .tab-btn { flex: 1; padding: 15px; text-align: center; background: #fcfcfc; border: 1px solid #eee; border-bottom: none; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: bold; color: #777; transition: 0.3s; }
@@ -50,8 +57,9 @@ COMMON_HEADER = '''
 
         .input-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; font-weight: bold; color: #444; }
-        select, input { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; outline: none; }
+        select, input { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; outline: none; background: #fff; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
         .btn-search { width: 100%; padding: 18px; background: #b0914f; color: white; border: none; border-radius: 5px; font-size: 20px; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
@@ -62,7 +70,7 @@ COMMON_HEADER = '''
     <div class="spacer"></div>
 '''
 
-# --- [2] الصفحة الرئيسية (الأزرار الشفافة فوق الصور) ---
+# --- [2] الصفحة الرئيسية (صور مرتبة وأزرار في أماكنها) ---
 @app.route('/')
 def home():
     content = '''
@@ -86,11 +94,12 @@ def home():
     '''
     return COMMON_HEADER + content + "</body></html>"
 
-# --- [3] صفحة الاستعلام (برمجة التبويبات + كل المصادر) ---
+# --- [3] صفحة الاستعلام (النحت الكامل لكل التبويبات والخيارات) ---
 @app.route('/search')
 def search():
     content = '''
     <div class="page-wrapper">
+        <div class="breadcrumb">الرئيسية / الخدمات الإلكترونية / <span style="color:#b0914f;">بيانات الاستعلام</span></div>
         <div class="service-title">استعلام عن المخالفات المرورية</div>
         
         <div class="form-container">
@@ -151,7 +160,12 @@ def search():
             <div id="license-data" class="tab-content">
                 <div class="input-group">
                     <label><span style="color:red;">*</span> إمارة الرخصة</label>
-                    <select><option>أبوظبي</option><option>دبي</option></select>
+                    <select>
+                        <option>أبوظبي / Abu Dhabi</option><option>دبي / Dubai</option>
+                        <option>الشارقة / Sharjah</option><option>عجمان / Ajman</option>
+                        <option>أم القيوين / Umm Al Quwain</option><option>رأس الخيمة / Ras Al Khaimah</option>
+                        <option>الفجيرة / Fujairah</option>
+                    </select>
                 </div>
                 <div class="input-group">
                     <label><span style="color:red;">*</span> رقم الرخصة</label>
@@ -181,6 +195,7 @@ def search():
 def checkout():
     return COMMON_HEADER + '<div class="page-wrapper"><h1 style="text-align:center;">جاري التحميل...</h1></div></body></html>'
 
+# --- [4] سطر التشغيل الذكي (لحل مشكلة البورت والأصفار) ---
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)
