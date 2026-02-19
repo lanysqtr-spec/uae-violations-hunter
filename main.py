@@ -3,34 +3,35 @@ from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-# --- [1] الهيكل الأساسي والهيدر الثابت ---
-# ملاحظة: استخدمت الهيدر الخاص بك ليكون موحداً وثابتاً في كل الموقع
+# --- [1] تنسيق الهيدر والصور والصفحات بالملي ---
 COMMON_HEADER = '''
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; background-color: #f7f8fa; font-family: 'Segoe UI', Tahoma, sans-serif; scroll-behavior: smooth; }
+        body, html { margin: 0; padding: 0; width: 100%; background-color: #ffffff; scroll-behavior: smooth; }
         
         /* تثبيت الهيدر الرفيع بالملي */
         .sticky-header {
             position: fixed; top: 0; left: 0; z-index: 9999; width: 100%;
             background-color: #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        .sticky-header img { width: 100%; display: block; }
+        .sticky-header img { width: 100%; display: block; border: none; }
         
-        .spacer { margin-top: 60px; } /* مساحة عشان المحتوى ما يختفيش تحت الهيدر */
+        .spacer { margin-top: 60px; } /* مساحة عشان الصور ما تدخلش تحت الهيدر */
 
-        /* تأثير الأزرار التفاعلية */
+        /* تنسيق الصور عشان ما تبقاش مبهدلة (كلهم عرض واحد) */
+        .page-content { display: flex; flex-direction: column; width: 100%; }
+        .page-content img { width: 100%; height: auto; display: block; border: none; margin: 0; padding: 0; }
+
+        /* الأزرار التفاعلية الشفافة */
         .interactive-btn { position: relative; cursor: pointer; transition: transform 0.2s; -webkit-tap-highlight-color: transparent; }
         .interactive-btn:active { transform: scale(0.94); filter: brightness(0.9); }
-        .full-link { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; }
         
-        /* تنسيقات صفحة الاستعلام (نحت كامل) */
-        .page-wrapper { max-width: 1000px; margin: 0 auto; padding: 20px; text-align: right; }
+        /* صفحة الاستعلام المنحوتة */
+        .page-wrapper { max-width: 1000px; margin: 0 auto; padding: 20px; text-align: right; direction: rtl; }
         .breadcrumb { font-size: 13px; color: #888; margin: 20px 0; }
         .service-title { color: #b0914f; font-size: 28px; font-weight: bold; margin-bottom: 25px; }
         .form-container { background: white; border-radius: 8px; padding: 35px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #eee; }
@@ -54,33 +55,33 @@ COMMON_HEADER = '''
     <div class="spacer"></div>
 '''
 
-# --- [2] مسار الصفحة الرئيسية (كاملة بالملي كما أرسلتها) ---
+# --- [2] الصفحة الرئيسية (كل الصور بالملي وبدون بهدلة) ---
 @app.route('/')
 def home():
     content = '''
-    <div class="page-content" style="display: flex; flex-direction: column; width: 100%;">
-        <img src="https://static.wixstatic.com/media/a9f3d9_c1d337bf7a804573a004f115b6c69d23~mv2.jpg" alt="Nav">
-        <img src="https://static.wixstatic.com/media/a9f3d9_d8f02563f4e2475fa5e4fcc5b2daaaf5~mv2.jpg" alt="Section 2">
+    <div class="page-content">
+        <img src="https://static.wixstatic.com/media/a9f3d9_c1d337bf7a804573a004f115b6c69d23~mv2.jpg">
+        <img src="https://static.wixstatic.com/media/a9f3d9_d8f02563f4e2475fa5e4fcc5b2daaaf5~mv2.jpg">
 
         <div class="interactive-btn" onclick="location.href='/search'">
-            <img src="https://static.wixstatic.com/media/a9f3d9_d0dcb4c088a84089afa337a46bc21bf7~mv2.jpg" alt="ابدأ الخدمة">
+            <img src="https://static.wixstatic.com/media/a9f3d9_d0dcb4c088a84089afa337a46bc21bf7~mv2.jpg">
         </div>
 
-        <img src="https://static.wixstatic.com/media/a9f3d9_dc754b0143e14766a16919be2a1ee249~mv2.jpg" alt="Section 4">
+        <img src="https://static.wixstatic.com/media/a9f3d9_dc754b0143e14766a16919be2a1ee249~mv2.jpg">
 
         <div class="interactive-btn">
-            <img src="https://static.wixstatic.com/media/a9f3d9_0596c91fd65d49a9b3598f7d4ff5a811~mv2.jpg" alt="مستخدم جديد">
+            <img src="https://static.wixstatic.com/media/a9f3d9_0596c91fd65d49a9b3598f7d4ff5a811~mv2.jpg">
         </div>
 
-        <img src="https://static.wixstatic.com/media/a9f3d9_1347280275a14cada9eef8982ee5a375~mv2.jpg" alt="Section 6">
-        <img src="https://static.wixstatic.com/media/a9f3d9_662e4c074fe94f80940882c18cd51a87~mv2.jpg" alt="Section 7">
-        <img src="https://static.wixstatic.com/media/a9f3d9_a4395e1857c74368b9e7460f40c83938~mv2.jpg" alt="Section 8">
-        <img src="https://static.wixstatic.com/media/a9f3d9_70831b816d864befb4b42fa1ffeca8f8~mv2.jpg" alt="Section 9">
+        <img src="https://static.wixstatic.com/media/a9f3d9_1347280275a14cada9eef8982ee5a375~mv2.jpg">
+        <img src="https://static.wixstatic.com/media/a9f3d9_662e4c074fe94f80940882c18cd51a87~mv2.jpg">
+        <img src="https://static.wixstatic.com/media/a9f3d9_a4395e1857c74368b9e7460f40c83938~mv2.jpg">
+        <img src="https://static.wixstatic.com/media/a9f3d9_70831b816d864befb4b42fa1ffeca8f8~mv2.jpg">
     </div>
     '''
     return COMMON_HEADER + content + "</body></html>"
 
-# --- [3] مسار صفحة الاستعلام (نحت كامل بدون اختصار) ---
+# --- [3] صفحة الاستعلام (النحت الكامل: أرقام، حروف، ومزدوج) ---
 @app.route('/search')
 def search():
     content = '''
@@ -153,8 +154,8 @@ def search():
 def checkout():
     return COMMON_HEADER + '<div class="page-wrapper"><h1 style="text-align:center;">جاري تجهيز صفحة الدفع...</h1></div></body></html>'
 
-# --- [4] سطر التشغيل الذكي لحل مشكلة الكلام الأحمر ---
+# --- [4] سطر التشغيل الذكي (حل مشكلة الأصفار والكلام الأحمر) ---
 if __name__ == '__main__':
-    # الكود ده بيسحب البورت اللي السيرفر عايزه تلقائياً
+    # الحصول على البورت من السيرفر (Render) تلقائياً
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
